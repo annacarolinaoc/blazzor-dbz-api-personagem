@@ -1,0 +1,70 @@
+﻿@page "/"
+
+
+@inject HttpClient Http
+
+<PageTitle>DBZ API</PageTitle>
+
+<h1>DBZ API</h1>
+
+<div class="mb-3">
+  <label for="personagemId" class="form-label">ID do Personagem:</label>
+  <input type="number" id="personagemId" class="form-control" @bind="personagemId" min="1" />
+</div>
+
+<button class="btn btn-primary" @onclick="BuscarPersonagem">Buscar</button>
+
+@if (loading)
+{
+  <p>Carregando...</p>
+}
+else if (personagem != null)
+{
+  <div class="mt-4">
+    <h4>Resultado:</h4>
+    <p><strong>Nome:</strong> @personagem.Name</p>
+    <p><strong>Planeta:</strong> @personagem.Planet</p>
+
+    @if (personagem.Transformations != null && personagem.Transformations.Any())
+    {
+      <p><strong>Transformações:</strong></p>
+      <ul>
+        @foreach (var t in personagem.Transformations)
+        {
+          <li>@t</li>
+        }
+      </ul>
+    }
+    else
+    {
+      <p><em>Sem transformações registradas.</em></p>
+    }
+  </div>
+}
+else if (erro)
+{
+  <p class="text-danger">❌ Personagem não encontrado!</p>
+}
+
+@code {
+  private int personagemId = 1;
+  private bool loading = false;
+  private bool erro = false;
+  private BlazzorDbzPersonagem.Models.Personagem? personagem;
+
+  private async Task BuscarPersonagem()
+  {
+    loading = true;
+    erro = false;
+    personagem = null;
+
+    var resultado = await DbzService.GetPersonagemAsync(personagemId);
+
+    if (resultado != null)
+      personagem = resultado;
+    else
+      erro = true;
+
+    loading = false;
+  }
+}
